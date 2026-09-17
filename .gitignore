@@ -14,5 +14,6 @@ results/
 results_v2/
 results_v3/
 app/build/
-backend/__pycache__/
+**/__pycache__/
 *.log
+*.pyc
