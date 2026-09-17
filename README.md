@@ -16,7 +16,7 @@ The system follows a decoupled architecture:
   - Alpha ($lpha$): 32
   - Target Modules: `query`, `value`
   - Learning Rate: $5 	imes 10^{-5}$
-  - Hardware Acceleration: Apple MPS (Metal Performance Shaders).
+  - Hardware Acceleration: GPU acceleration.
 - **Task**: 10-class emotion classification (Anger, Joy, Disapproval, etc.).
 
 ### 🌐 Backend
