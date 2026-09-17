@@ -6,16 +6,16 @@ OMNITRIX is a specialized NLP pipeline designed for detecting distress and emoti
 
 The system follows a decoupled architecture:
 
-**Android App (Kotlin/Compose)** $\rightarrow$ **FastAPI Backend** $\rightarrow$ **MuRIL v3 (PEFT/LoRA)** $\rightarrow$ **Result**
+**Android App (Kotlin/Compose)** $ightarrow$ **FastAPI Backend** $ightarrow$ **MuRIL v3 (PEFT/LoRA)** $ightarrow$ **Result**
 
 ### 🧠 Machine Learning Core
 - **Base Model**: `google/muril-base-cased` (Multilingual Representations for Indian Languages).
 - **Tuning Technique**: Parameter-Efficient Fine-Tuning (PEFT) using **LoRA** (Low-Rank Adaptation).
 - **Configuration (v3)**:
   - Rank ($r$): 16
-  - Alpha ($\alpha$): 32
+  - Alpha ($lpha$): 32
   - Target Modules: `query`, `value`
-  - Learning Rate: $5 \times 10^{-5}$
+  - Learning Rate: $5 	imes 10^{-5}$
   - Hardware Acceleration: Apple MPS (Metal Performance Shaders).
 - **Task**: 10-class emotion classification (Anger, Joy, Disapproval, etc.).
 
