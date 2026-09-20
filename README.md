@@ -389,12 +389,6 @@ Common issues:
 
 ---
 
-## 📝 License
-
-This project is part of campus safety initiatives at [Your University].
-
----
-
 ## 👥 Contact & Support
 
 For questions or support regarding this system, contact your campus ombudsperson or safety office.
