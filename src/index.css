@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Public Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #1A2634;
+    background-color: #F4F6F9;
+  }
+  
+  h1, h2, h3, h4 {
+    font-family: 'IBM Plex Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #0F1F33;
+  }
+}
+
+/* Subtle, authentic matte surface textures suited for institutional confidential reporting */
+.bg-safety-paper {
+  background-color: #FAFBFD;
+  background-image: radial-gradient(#CBD5E1 0.75px, transparent 0.75px);
+  background-size: 16px 16px;
+}
+
+.bg-hero-emboss {
+  background: linear-gradient(180deg, #F8FAFD 0%, #FFFFFF 100%);
+}
+
+/* Notebook ruled paper aesthetic representing reading between lines */
+.bg-notebook-ruled {
+  background-color: #FAFCFE;
+  background-image: linear-gradient(#E8EDF4 1px, transparent 1px);
+  background-size: 100% 28px;
+}
+

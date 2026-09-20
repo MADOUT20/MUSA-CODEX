@@ -1,0 +1,8 @@
+{
+  "name": "Remix Read Between the Lines - Campus Safety",
+  "description": "A confidential and anonymous campus safety reporting and support application designed for student wellbeing, harassment prevention, and secure report tracking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
