@@ -352,14 +352,16 @@ export const TrackScreen: React.FC<TrackScreenProps> = ({
                     <div
                       className="absolute left-2 top-0 w-0.5 bg-gradient-to-b from-[#0E1E32] to-[#E2E8F0] pointer-events-none"
                       style={{
-                        height: selectedReport.timeline.length > 0
+                        height: selectedReport.timeline.some(e => e.badge === 'Resolved')
+                          ? `calc(${selectedReport.timeline.findIndex(e => e.badge === 'Resolved') + 1} * 100% - 12px)`
+                          : selectedReport.timeline.length > 0
                           ? `calc(${selectedReport.timeline.length} * 100% - 12px)`
                           : '0px'
                       }}
                     />
 
                     {selectedReport.timeline.map((event, idx) => (
-                      <div key={event.id} className="relative pl-8">
+                      <div key={event.id} className={`relative pl-8 ${event.badge === 'Resolved' ? 'flex-1 flex flex-col' : ''}`}>
                         {/* Timeline Dot */}
                         <div className={`absolute left-0 top-1 w-4 h-4 rounded-full border-2 transition-colors ${
                           idx === selectedReport.timeline.length - 1
@@ -368,7 +370,7 @@ export const TrackScreen: React.FC<TrackScreenProps> = ({
                         }`} />
 
                         {/* Event Content Card */}
-                        <div className="p-2 bg-[#FAFBFD] border border-[#E2E8F0] rounded-lg hover:border-[#D0D9E4] hover:bg-white transition-colors">
+                        <div className={`p-2 bg-[#FAFBFD] border border-[#E2E8F0] rounded-lg hover:border-[#D0D9E4] hover:bg-white transition-colors ${event.badge === 'Resolved' ? 'flex-1 flex flex-col' : ''}`}>
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1 min-w-0">
                               <h4 className="text-xs font-semibold text-[#0E1E32] leading-snug">{event.title}</h4>

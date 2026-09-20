@@ -64,32 +64,40 @@ export default function App() {
         {/* Active Screen View */}
         <div className={`flex-1 bg-white flex flex-col w-full ${activeTab === 'track' || activeTab === 'home' ? 'overflow-hidden' : 'overflow-y-auto'}`}>
           {activeTab === 'home' && (
-            <HomeScreen
-              onStartReport={handleStartReport}
-              onOpenPrivacy={() => setIsPrivacyModalOpen(true)}
-              onNavigateToSupport={() => setActiveTab('support')}
-            />
+            <div className="transition-smooth-fade flex-1">
+              <HomeScreen
+                onStartReport={handleStartReport}
+                onOpenPrivacy={() => setIsPrivacyModalOpen(true)}
+                onNavigateToSupport={() => setActiveTab('support')}
+              />
+            </div>
           )}
 
           {activeTab === 'report' && (
-            <ReportScreen
-              onReportSubmitted={handleReportSubmitted}
-              onCancel={() => setActiveTab('home')}
-              onOpenPrivacy={() => setIsPrivacyModalOpen(true)}
-            />
+            <div className="transition-smooth-right flex-1">
+              <ReportScreen
+                onReportSubmitted={handleReportSubmitted}
+                onCancel={() => setActiveTab('home')}
+                onOpenPrivacy={() => setIsPrivacyModalOpen(true)}
+              />
+            </div>
           )}
 
           {activeTab === 'track' && (
-            <TrackScreen
-              initialToken={activeTrackToken}
-              onNavigateToReport={() => setActiveTab('report')}
-            />
+            <div className="transition-smooth-bottom flex-1">
+              <TrackScreen
+                initialToken={activeTrackToken}
+                onNavigateToReport={() => setActiveTab('report')}
+              />
+            </div>
           )}
 
           {activeTab === 'support' && (
-            <SupportScreen
-              onOpenPrivacy={() => setIsPrivacyModalOpen(true)}
-            />
+            <div className="transition-smooth-left flex-1">
+              <SupportScreen
+                onOpenPrivacy={() => setIsPrivacyModalOpen(true)}
+              />
+            </div>
           )}
         </div>
 

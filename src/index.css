@@ -1,33 +1,64 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@layer base {
-  body {
-    font-family: 'Public Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: #1A2634;
-    background-color: #F4F6F9;
+/* iOS-style ultra-smooth transitions */
+@keyframes fadeInSmooth {
+  0% {
+    opacity: 0;
+    transform: scale(0.98);
   }
-  
-  h1, h2, h3, h4 {
-    font-family: 'IBM Plex Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: #0F1F33;
+  100% {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
-/* Subtle, authentic matte surface textures suited for institutional confidential reporting */
-.bg-safety-paper {
-  background-color: #FAFBFD;
-  background-image: radial-gradient(#CBD5E1 0.75px, transparent 0.75px);
-  background-size: 16px 16px;
+@keyframes slideInRightSmooth {
+  0% {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
-.bg-hero-emboss {
-  background: linear-gradient(180deg, #F8FAFD 0%, #FFFFFF 100%);
+@keyframes slideInBottomSmooth {
+  0% {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* Notebook ruled paper aesthetic representing reading between lines */
-.bg-notebook-ruled {
-  background-color: #FAFCFE;
-  background-image: linear-gradient(#E8EDF4 1px, transparent 1px);
-  background-size: 100% 28px;
+@keyframes slideInLeftSmooth {
+  0% {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
+.transition-smooth-fade {
+  animation: fadeInSmooth 1.0s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.transition-smooth-right {
+  animation: slideInRightSmooth 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.transition-smooth-bottom {
+  animation: slideInBottomSmooth 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.transition-smooth-left {
+  animation: slideInLeftSmooth 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}

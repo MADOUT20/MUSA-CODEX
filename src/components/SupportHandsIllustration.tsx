@@ -6,7 +6,7 @@ export const SupportHandsIllustration: React.FC<{ className?: string }> = ({ cla
       {/* Editorial photograph container */}
       <div className="relative aspect-[16/9] w-full rounded-lg overflow-hidden bg-[#E2E8F0] border border-[#CBD5E1]">
         <img
-          src="/holding_hands.jpg"
+          src="./holding_hands.jpg"
           alt="Hands held together in support and solidarity"
           referrerPolicy="no-referrer"
           className="w-full h-full object-cover object-center"

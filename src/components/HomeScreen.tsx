@@ -58,7 +58,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           {/* Poignant Photography */}
           <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#E2E8F0]">
             <img
-              src="/holding_hands.jpg"
+              src="./holding_hands.jpg"
               alt="Hands held tightly in quiet student solidarity and protection"
               referrerPolicy="no-referrer"
               className="w-full h-full object-cover object-center"

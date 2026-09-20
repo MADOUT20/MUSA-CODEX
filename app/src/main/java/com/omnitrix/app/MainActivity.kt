@@ -41,6 +41,9 @@ class MainActivity : Activity() {
                 mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
                 allowFileAccess = true
                 allowContentAccess = true
+                // Enable loading from file:// with proper asset access
+                setAllowUniversalAccessFromFileURLs(true)
+                setAllowFileAccessFromFileURLs(true)
             }
 
             webViewClient = object : WebViewClient() {
@@ -67,9 +70,9 @@ class MainActivity : Activity() {
                 }
             }
 
-            // Load from dev server on emulator special IP 10.0.2.2:3000
-            loadUrl("http://10.0.2.2:3000")
-            Log.d(TAG, "Loading from dev server: http://10.0.2.2:3000")
+            // Load from bundled assets with proper base URL for relative paths
+            loadUrl("file:///android_asset/web-ui/index.html")
+            Log.d(TAG, "Loading from assets: file:///android_asset/web-ui/index.html")
         }
 
         setContentView(webView)
