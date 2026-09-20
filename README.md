@@ -34,12 +34,12 @@ Android App (Kotlin/Compose WebView)
 
 ### Terminal 1 - Backend:
 ```bash
-cd "/Users/siddharthchillapwar/Desktop/MUSA CODEX" && source .venv/bin/activate && uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+source .venv/bin/activate && uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 ### Terminal 2 - Android App:
 ```bash
-cd "/Users/siddharthchillapwar/Desktop/MUSA CODEX" && npm run build --legacy-peer-deps && rm -rf app/src/main/assets/web-ui/* && cp -r dist/* app/src/main/assets/web-ui/ && ./gradlew installDebug && ~/Library/Android/sdk/platform-tools/adb shell am start -n com.omnitrix.app/.MainActivity
+npm run build --legacy-peer-deps && rm -rf app/src/main/assets/web-ui/* && cp -r dist/* app/src/main/assets/web-ui/ && ./gradlew installDebug && adb shell am start -n com.omnitrix.app/.MainActivity
 ```
 
 See **RUN.md** for detailed setup and troubleshooting.
@@ -52,12 +52,12 @@ See **RUN.md** for detailed setup and troubleshooting.
 
 ### PowerShell/CMD 1 - Backend:
 ```batch
-cd "C:\path\to\MUSA CODEX" && .venv\Scripts\activate && uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+.venv\Scripts\activate && uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 ### PowerShell/CMD 2 - Android App:
 ```batch
-cd "C:\path\to\MUSA CODEX" && npm run build --legacy-peer-deps && rmdir /s /q app\src\main\assets\web-ui && mkdir app\src\main\assets\web-ui && xcopy /E dist\* app\src\main\assets\web-ui\ && gradlew.bat installDebug && %ANDROID_HOME%\platform-tools\adb shell am start -n com.omnitrix.app/.MainActivity
+npm run build --legacy-peer-deps && rmdir /s /q app\src\main\assets\web-ui && mkdir app\src\main\assets\web-ui && xcopy /E dist\* app\src\main\assets\web-ui\ && gradlew.bat installDebug && %ANDROID_HOME%\platform-tools\adb shell am start -n com.omnitrix.app/.MainActivity
 ```
 
 See **RUN.md** for detailed setup and troubleshooting.
