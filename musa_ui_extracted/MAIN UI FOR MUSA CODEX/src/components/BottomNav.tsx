@@ -54,7 +54,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onSelectTab }) 
                     : 'text-[#64748B] group-hover:text-[#0C2340]'
                 }`}
               >
-                <IconComponent className={`w-6 h-6 ${isActive ? 'stroke-[2.2]' : 'stroke-[1.8]'}`} />
+                <IconComponent className={`w-4 h-4 ${isActive ? 'stroke-[2.2]' : 'stroke-[1.8]'}`} />
               </div>
 
               {/* Label */}

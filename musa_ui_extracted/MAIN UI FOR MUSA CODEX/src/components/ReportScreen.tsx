@@ -1,20 +1,12 @@
 import React, { useState } from 'react';
-import {
-  ShieldCheck,
-  ArrowRight,
-  ArrowLeft,
-  CheckCircle2,
-  Copy,
-  Check,
-  AlertTriangle,
-  ChevronDown,
-  Users,
-  Eye,
-  MessageCircle,
-  Zap,
-  BookOpen,
-  AlertOctagon,
-  HelpCircle
+import { 
+  ShieldCheck, 
+  ArrowRight, 
+  ArrowLeft, 
+  CheckCircle2, 
+  Copy, 
+  Check, 
+  AlertTriangle
 } from 'lucide-react';
 import { IncidentReport, ReportCategory, ReportUrgency } from '../types';
 import { saveReport } from '../data/initialData';
@@ -25,48 +17,41 @@ interface ReportScreenProps {
   onOpenPrivacy: () => void;
 }
 
-const CATEGORIES: { id: ReportCategory; label: string; desc: string; icon: React.ReactNode }[] = [
-  {
-    id: 'ragging',
-    label: 'Hostile Group Coercion / Ragging',
-    desc: 'Forced submission, senior hierarchy enforcement, humiliating rituals or forced chores.',
-    icon: <Users className="w-5 h-5" />
+const CATEGORIES: { id: ReportCategory; label: string; desc: string }[] = [
+  { 
+    id: 'ragging', 
+    label: 'Hostile Group Coercion / Ragging', 
+    desc: 'Forced submission, senior hierarchy enforcement, humiliating rituals or forced chores.'
   },
-  {
-    id: 'intimidation',
-    label: 'Covert Harassment & Intimidation',
-    desc: 'Corridor stalking, room blocking, implied social isolation or hostel threats.',
-    icon: <Eye className="w-5 h-5" />
+  { 
+    id: 'intimidation', 
+    label: 'Covert Harassment & Intimidation', 
+    desc: 'Corridor stalking, room blocking, implied social isolation or hostel threats.'
   },
-  {
-    id: 'cyber_harassment',
-    label: 'Digital / Group Chat Harassment',
-    desc: 'Non-consensual recordings, group chat targeting, unauthorized photo circulation.',
-    icon: <MessageCircle className="w-5 h-5" />
+  { 
+    id: 'cyber_harassment', 
+    label: 'Digital / Group Chat Harassment', 
+    desc: 'Non-consensual recordings, group chat targeting, unauthorized photo circulation.'
   },
-  {
-    id: 'verbal_abuse',
-    label: 'Verbal Threats & Hostile Speech',
-    desc: 'Aggressive insults, discriminatory slurs, explicit humiliation or veiled threats.',
-    icon: <Zap className="w-5 h-5" />
+  { 
+    id: 'verbal_abuse', 
+    label: 'Verbal Threats & Hostile Speech', 
+    desc: 'Aggressive insults, discriminatory slurs, explicit humiliation or veiled threats.'
   },
-  {
-    id: 'academic_coercion',
-    label: 'Academic Coercion & Retaliation',
-    desc: 'Withholding lab equipment, forced assignment completion, viva manipulation.',
-    icon: <BookOpen className="w-5 h-5" />
+  { 
+    id: 'academic_coercion', 
+    label: 'Academic Coercion & Retaliation', 
+    desc: 'Withholding lab equipment, forced assignment completion, viva manipulation.'
   },
-  {
-    id: 'physical_distress',
-    label: 'Physical Restraint or Force',
-    desc: 'Physical blockage, aggressive confrontation, sleep or facility deprivation.',
-    icon: <AlertOctagon className="w-5 h-5" />
+  { 
+    id: 'physical_distress', 
+    label: 'Physical Restraint or Force', 
+    desc: 'Physical blockage, aggressive confrontation, sleep or facility deprivation.'
   },
-  {
-    id: 'other',
-    label: 'Other Campus Wellbeing Concern',
-    desc: 'Any safety issue where you feel compromised, pressured, or unsafe.',
-    icon: <HelpCircle className="w-5 h-5" />
+  { 
+    id: 'other', 
+    label: 'Other Campus Wellbeing Concern', 
+    desc: 'Any safety issue where you feel compromised, pressured, or unsafe.'
   }
 ];
 
@@ -76,26 +61,6 @@ export const ReportScreen: React.FC<ReportScreenProps> = ({
   onOpenPrivacy
 }) => {
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
-  const [openDropdown, setOpenDropdown] = useState<'location' | 'time' | null>(null);
-
-  const locationOptions = [
-    'Residence Halls / Dormitory',
-    'Academic Building / Classrooms',
-    'Laboratories / Engineering Wing',
-    'Student Union / Dining Commons',
-    'Campus Library / Study Corridors',
-    'Campus Walkway / Outdoor Quad',
-    'Digital Group Chat / Social Media',
-    'Off-Campus University Transit'
-  ];
-
-  const timeOptions = [
-    'Within the last 48 hours',
-    'Earlier this week',
-    'Ongoing / Recurring pattern',
-    'During late night hours (after 10 PM)',
-    'More than 2 weeks ago'
-  ];
 
   // Form state
   const [selectedCategory, setSelectedCategory] = useState<ReportCategory>('intimidation');
@@ -104,81 +69,60 @@ export const ReportScreen: React.FC<ReportScreenProps> = ({
   const [approximateTime, setApproximateTime] = useState('Within the last 48 hours');
   const [urgency, setUrgency] = useState<ReportUrgency>('medium');
   const [desiredOutcome, setDesiredOutcome] = useState('Discreet unannounced walk-throughs by neutral campus staff');
-
+  
   // Submission completion state
   const [submittedToken, setSubmittedToken] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async () => {
-    setIsSubmitting(true);
-    try {
-      const backendUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-        ? 'http://localhost:8000/api/complaint'
-        : 'http://10.0.2.2:8000/api/complaint';
+  const handleSubmit = () => {
+    const randomHex = Math.floor(1000 + Math.random() * 9000);
+    const generatedToken = `RBL-${randomHex}-SAFE`;
 
-      const response = await fetch(backendUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: narrative }),
-      });
+    const catObj = CATEGORIES.find(c => c.id === selectedCategory);
 
-      if (!response.ok) throw new Error('Backend communication failure');
+    const newReport: IncidentReport = {
+      id: generatedToken,
+      createdAt: 'Just now',
+      category: selectedCategory,
+      categoryLabel: catObj ? catObj.label : 'General Safety',
+      location: locationZone,
+      locationDetails: approximateTime,
+      approximateDate: approximateTime,
+      narrative: narrative || 'Confidential report submitted by anonymous student.',
+      sanitizedNarrative: narrative,
+      urgency: urgency,
+      desiredOutcome: desiredOutcome,
+      status: 'submitted',
+      statusLabel: 'Received & Tokenized',
+      timeline: [
+        {
+          id: `tl-${Date.now()}-1`,
+          timestamp: 'Just now',
+          title: 'Encrypted Report Received',
+          description: 'Client telemetry purged. Cryptographic tracking token generated.',
+          badge: 'Identity Vault Active',
+          actor: 'system'
+        },
+        {
+          id: `tl-${Date.now()}-2`,
+          timestamp: 'Upcoming',
+          title: 'Triaged by Campus Ombudsperson',
+          description: 'Will be reviewed under campus safety guidelines without requesting student identity.',
+          actor: 'ombudsperson'
+        }
+      ],
+      messages: [
+        {
+          id: `msg-${Date.now()}`,
+          sender: 'ombudsperson',
+          timestamp: 'Automated System Notice',
+          content: 'Your report has been secured in the confidential intake vault. An ombudsperson will post updates and coordinate protective measures right here on your anonymous tracker.'
+        }
+      ]
+    };
 
-      const analysis = await response.json();
-      const randomHex = Math.floor(1000 + Math.random() * 9000);
-      const generatedToken = `RBL-${randomHex}-SAFE`;
-      const catObj = CATEGORIES.find(c => c.id === selectedCategory);
-
-      const newReport: IncidentReport = {
-        id: generatedToken,
-        createdAt: 'Just now',
-        category: selectedCategory,
-        categoryLabel: catObj ? catObj.label : 'General Safety',
-        location: locationZone,
-        locationDetails: approximateTime,
-        approximateDate: approximateTime,
-        narrative: narrative || 'Confidential report submitted by anonymous student.',
-        sanitizedNarrative: narrative,
-        urgency: urgency,
-        desiredOutcome: desiredOutcome,
-        status: 'submitted',
-        statusLabel: `Received & Tokenized (${analysis.risk_level} Risk)`,
-        timeline: [
-          {
-            id: `tl-${Date.now()}-1`,
-            timestamp: 'Just now',
-            title: 'Encrypted Report Received',
-            description: `System detected ${analysis.emotion} with ${Math.round(analysis.confidence * 100)}% confidence. Analysis categorized as ${analysis.risk_level} risk level.`,
-            badge: 'Identity Vault Active',
-            actor: 'system'
-          },
-          {
-            id: `tl-${Date.now()}-2`,
-            timestamp: 'Upcoming',
-            title: 'Triaged by Campus Ombudsperson',
-            description: 'Will be reviewed under campus safety guidelines without requesting student identity.',
-            actor: 'ombudsperson'
-          }
-        ],
-        messages: [
-          {
-            id: `msg-${Date.now()}`,
-            sender: 'ombudsperson',
-            timestamp: 'Automated System Notice',
-            content: `Your report has been secured in the confidential intake vault. Because the system detected a ${analysis.risk_level.toLowerCase()} risk level, a priority triage will be conducted.`
-          }
-        ]
-      };
-
-      saveReport(newReport);
-      setSubmittedToken(generatedToken);
-    } catch (error) {
-      console.error('Submission Error:', error);
-      alert('Failed to connect to the safety backend. Please check your connection and try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    saveReport(newReport);
+    setSubmittedToken(generatedToken);
   };
 
   const copyToClipboard = () => {
@@ -189,6 +133,7 @@ export const ReportScreen: React.FC<ReportScreenProps> = ({
     }
   };
 
+  // If submitted, show success state with token
   if (submittedToken) {
     return (
       <div className="flex flex-col min-h-full pb-8 px-4 sm:px-6 pt-3 animate-in fade-in bg-white">
@@ -208,6 +153,7 @@ export const ReportScreen: React.FC<ReportScreenProps> = ({
             Please save your unique anonymous tracking token. This is the only way to track progress and view confidential updates from the campus safety board.
           </p>
 
+          {/* Token Card */}
           <div className="mt-6 p-4 rounded-xl bg-white border-2 border-[#E2E8F0] shadow-xs text-left">
             <span className="text-xs font-medium text-[#526B84] uppercase tracking-wider block">
               Your Anonymous Tracking Token
@@ -239,6 +185,7 @@ export const ReportScreen: React.FC<ReportScreenProps> = ({
             </p>
           </div>
 
+          {/* Quick Actions */}
           <div className="mt-6 flex flex-col gap-2.5">
             <button
               onClick={() => onReportSubmitted(submittedToken)}
@@ -260,8 +207,9 @@ export const ReportScreen: React.FC<ReportScreenProps> = ({
   }
 
   return (
-    <div className="flex flex-col h-full bg-white">
-      <div className="flex items-center justify-between py-3 px-4 sm:px-6 border-b border-[#E2E8F0] shrink-0">
+    <div className="flex flex-col min-h-full pb-8 px-4 sm:px-6 pt-2 bg-white">
+      {/* Header bar */}
+      <div className="flex items-center justify-between py-3 border-b border-[#E2E8F0]">
         <button
           onClick={() => {
             if (step > 1) setStep((step - 1) as any);
@@ -269,7 +217,7 @@ export const ReportScreen: React.FC<ReportScreenProps> = ({
           }}
           className="flex items-center gap-1.5 text-xs font-medium text-[#526B84] hover:text-[#0E1E32] transition-colors cursor-pointer"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-4 h-4" />
           <span>{step === 1 ? 'Cancel' : 'Back'}</span>
         </button>
 
@@ -281,12 +229,13 @@ export const ReportScreen: React.FC<ReportScreenProps> = ({
           onClick={onOpenPrivacy}
           className="flex items-center gap-1 text-xs text-[#205085] hover:underline cursor-pointer"
         >
-          <ShieldCheck className="w-5 h-5" />
+          <ShieldCheck className="w-3.5 h-3.5" />
           <span>Shielded</span>
         </button>
       </div>
 
-      <div className="flex gap-1.5 mt-3 mb-5 max-w-md mx-auto w-full px-4 sm:px-6 shrink-0">
+      {/* Progress Dots */}
+      <div className="flex gap-1.5 mt-3 mb-5 max-w-md mx-auto w-full">
         {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
@@ -297,20 +246,17 @@ export const ReportScreen: React.FC<ReportScreenProps> = ({
         ))}
       </div>
 
-      <div className="flex-1 overflow-hidden px-4 sm:px-6 pb-8 flex flex-col">
-
+      {/* Step 1: Category Selection */}
       {step === 1 && (
-        <div className="max-w-md mx-auto w-full flex flex-col h-full">
-          <div className="flex-shrink-0 mb-3">
-            <h2 className="text-2xl font-semibold tracking-tight text-[#0E1E32]">
-              What kind of concern occurred?
-            </h2>
-            <p className="text-sm text-[#384D65] mt-1">
-              Select the category that describes the situation.
-            </p>
-          </div>
+        <div className="max-w-md mx-auto w-full animate-in fade-in">
+          <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-[#0E1E32]">
+            What kind of concern occurred?
+          </h2>
+          <p className="text-xs sm:text-sm text-[#384D65] mt-1 mb-4">
+            Select the category that most closely describes the situation. You can explain details next.
+          </p>
 
-          <div className="space-y-1.5 flex-1">
+          <div className="space-y-2">
             {CATEGORIES.map((cat) => {
               const isSelected = selectedCategory === cat.id;
 
@@ -318,49 +264,45 @@ export const ReportScreen: React.FC<ReportScreenProps> = ({
                 <label
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.id)}
-                  className={`flex items-start gap-3 p-2.5 rounded-xl border transition-colors cursor-pointer ${
+                  className={`flex items-start gap-3 p-3.5 rounded-xl border transition-colors cursor-pointer ${
                     isSelected
                       ? 'border-[#0C2340] bg-[#F4F7FB]'
                       : 'border-[#E2E8F0] bg-white hover:bg-[#F8FAFC]'
                   }`}
                 >
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
-                    isSelected ? 'bg-[#0C2340] text-white' : 'text-[#0C2340]'
-                  }`}>
-                    {cat.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-semibold text-[#0C2340] leading-snug">
+                  <input
+                    type="radio"
+                    name="category"
+                    checked={isSelected}
+                    onChange={() => setSelectedCategory(cat.id)}
+                    className="mt-1 h-4 w-4 text-[#0C2340] border-[#CBD5E1] focus:ring-[#0C2340]"
+                  />
+                  <div className="flex-1">
+                    <h3 className="text-xs sm:text-sm font-semibold text-[#0C2340] leading-snug">
                       {cat.label}
                     </h3>
-                    <p className="text-xs text-[#526B84] mt-0.5 leading-snug line-clamp-1">
+                    <p className="text-[11px] sm:text-xs text-[#526B84] mt-0.5 leading-normal">
                       {cat.desc}
                     </p>
-                  </div>
-                  <div className={`w-5 h-5 rounded-full border-2 shrink-0 mt-0.5 flex items-center justify-center ${
-                    isSelected
-                      ? 'border-[#0C2340] bg-[#0C2340]'
-                      : 'border-[#CBD5E1]'
-                  }`}>
-                    {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
                   </div>
                 </label>
               );
             })}
           </div>
 
-          <div className="pt-2 border-t border-[#E2E8F0] shrink-0 mt-2">
+          <div className="mt-6 pt-4 border-t border-[#E2E8F0]">
             <button
               onClick={() => setStep(2)}
-              className="w-full py-2.5 bg-[#0E1E32] hover:bg-[#1B3150] text-white rounded-xl font-medium text-base transition-colors cursor-pointer flex items-center justify-center gap-2 shadow-[0_2px_8px_rgba(14,30,50,0.18)]"
+              className="w-full py-3 bg-[#0E1E32] hover:bg-[#1B3150] text-white rounded-xl font-medium text-sm transition-colors cursor-pointer flex items-center justify-center gap-2 shadow-[0_2px_8px_rgba(14,30,50,0.18)]"
             >
               <span>Continue to Narrative</span>
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </div>
       )}
 
+      {/* Step 2: Narrative */}
       {step === 2 && (
         <div className="max-w-md mx-auto w-full animate-in fade-in">
           <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-[#0E1E32]">
@@ -392,15 +334,16 @@ export const ReportScreen: React.FC<ReportScreenProps> = ({
             <button
               onClick={() => setStep(3)}
               disabled={narrative.trim().length < 5}
-              className="flex-1 py-3 bg-[#0E1E32] hover:bg-[#1B3150] text-white rounded-xl font-medium text-sm transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-[0_2px_8px_rgba(14,30,50,0.18)]"
+              className="flex-1 py-3 bg-[#0E1E32] hover:bg-[#1B3150] text-white rounded-xl font-medium text-sm transition-colors cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-[0_2px_8px_rgba(14,30,50,0.18)]"
             >
               <span>Next: Location</span>
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </div>
       )}
 
+      {/* Step 3: Location & Time Context */}
       {step === 3 && (
         <div className="max-w-md mx-auto w-full animate-in fade-in">
           <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-[#0E1E32]">
@@ -415,74 +358,37 @@ export const ReportScreen: React.FC<ReportScreenProps> = ({
               <label className="block text-xs font-semibold uppercase tracking-wider text-[#0E1E32] mb-1.5">
                 Campus Location Zone
               </label>
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setOpenDropdown('location')}
-                  className="w-full p-3 rounded-xl border border-[#E2E8F0] bg-white text-sm text-[#0E1E32] focus:outline-none focus:border-[#0E1E32] flex items-center justify-between hover:bg-[#F8FAFC] transition-colors cursor-pointer"
-                >
-                  <span>{locationZone}</span>
-                  <ChevronDown className={`w-5 h-5 text-[#607994] transition-transform ${openDropdown === 'location' ? 'rotate-180' : ''}`} />
-                </button>
-                {openDropdown === 'location' && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#E2E8F0] rounded-xl shadow-lg z-10 max-h-48 overflow-y-auto">
-                    {locationOptions.map((option) => (
-                      <button
-                        key={option}
-                        type="button"
-                        onClick={() => {
-                          setLocationZone(option);
-                          setOpenDropdown(null);
-                        }}
-                        className={`w-full text-left px-3 py-2.5 text-sm transition-colors ${
-                          locationZone === option
-                            ? 'bg-[#0E1E32] text-white font-medium'
-                            : 'text-[#0E1E32] hover:bg-[#F8FAFC]'
-                        }`}
-                      >
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <select
+                value={locationZone}
+                onChange={(e) => setLocationZone(e.target.value)}
+                className="w-full p-3 rounded-xl border border-[#E2E8F0] bg-white text-sm text-[#0E1E32] focus:outline-none focus:border-[#0E1E32]"
+              >
+                <option value="Residence Halls / Dormitory">Residence Halls / Dormitory</option>
+                <option value="Academic Building / Classrooms">Academic Building / Classrooms</option>
+                <option value="Laboratories / Engineering Wing">Laboratories / Engineering Wing</option>
+                <option value="Student Union / Dining Commons">Student Union / Dining Commons</option>
+                <option value="Campus Library / Study Corridors">Campus Library / Study Corridors</option>
+                <option value="Campus Walkway / Outdoor Quad">Campus Walkway / Outdoor Quad</option>
+                <option value="Digital Group Chat / Social Media">Digital Group Chat / Social Media</option>
+                <option value="Off-Campus University Transit">Off-Campus University Transit</option>
+              </select>
             </div>
 
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-[#0E1E32] mb-1.5">
                 Approximate Timeframe
               </label>
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setOpenDropdown('time')}
-                  className="w-full p-3 rounded-xl border border-[#E2E8F0] bg-white text-sm text-[#0E1E32] focus:outline-none focus:border-[#0E1E32] flex items-center justify-between hover:bg-[#F8FAFC] transition-colors cursor-pointer"
-                >
-                  <span>{approximateTime}</span>
-                  <ChevronDown className={`w-5 h-5 text-[#607994] transition-transform ${openDropdown === 'time' ? 'rotate-180' : ''}`} />
-                </button>
-                {openDropdown === 'time' && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#E2E8F0] rounded-xl shadow-lg z-10 max-h-48 overflow-y-auto">
-                    {timeOptions.map((option) => (
-                      <button
-                        key={option}
-                        type="button"
-                        onClick={() => {
-                          setApproximateTime(option);
-                          setOpenDropdown(null);
-                        }}
-                        className={`w-full text-left px-3 py-2.5 text-sm transition-colors ${
-                          approximateTime === option
-                            ? 'bg-[#0E1E32] text-white font-medium'
-                            : 'text-[#0E1E32] hover:bg-[#F8FAFC]'
-                        }`}
-                      >
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <select
+                value={approximateTime}
+                onChange={(e) => setApproximateTime(e.target.value)}
+                className="w-full p-3 rounded-xl border border-[#E2E8F0] bg-white text-sm text-[#0E1E32] focus:outline-none focus:border-[#0E1E32]"
+              >
+                <option value="Within the last 48 hours">Within the last 48 hours</option>
+                <option value="Earlier this week">Earlier this week</option>
+                <option value="Ongoing / Recurring pattern">Ongoing / Recurring pattern</option>
+                <option value="During late night hours (after 10 PM)">During late night hours (after 10 PM)</option>
+                <option value="More than 2 weeks ago">More than 2 weeks ago</option>
+              </select>
             </div>
 
             <div className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl">
@@ -504,12 +410,13 @@ export const ReportScreen: React.FC<ReportScreenProps> = ({
               className="flex-1 py-3 bg-[#0E1E32] hover:bg-[#1B3150] text-white rounded-xl font-medium text-sm transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-[0_2px_8px_rgba(14,30,50,0.18)]"
             >
               <span>Next: Action</span>
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </div>
       )}
 
+      {/* Step 4: Urgency & Desired Resolution */}
       {step === 4 && (
         <div className="max-w-md mx-auto w-full animate-in fade-in">
           <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-[#0E1E32]">
@@ -582,7 +489,7 @@ export const ReportScreen: React.FC<ReportScreenProps> = ({
 
             {/* Final Security Pledge Box */}
             <div className="p-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl flex items-start gap-2.5">
-              <ShieldCheck className="w-5 h-5 text-[#2E7D63] shrink-0 mt-0.5" />
+              <ShieldCheck className="w-4 h-4 text-[#2E7D63] shrink-0 mt-0.5" />
               <p className="text-[11px] text-[#384D65] leading-relaxed">
                 By submitting, your narrative is encrypted and routed directly to the university independent ombuds office. No device data or IP address is retained.
               </p>
@@ -600,13 +507,12 @@ export const ReportScreen: React.FC<ReportScreenProps> = ({
               onClick={handleSubmit}
               className="flex-1 py-3 bg-[#0E1E32] hover:bg-[#1B3150] text-white rounded-xl font-medium text-sm transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-[0_2px_8px_rgba(14,30,50,0.18)]"
             >
-              <ShieldCheck className="w-5 h-5" />
+              <ShieldCheck className="w-4 h-4" />
               <span>Submit Anonymously</span>
             </button>
           </div>
         </div>
       )}
-      </div>
     </div>
   );
 };

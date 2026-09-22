@@ -14,7 +14,6 @@ export default function App() {
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
   const [isQuickExit, setIsQuickExit] = useState(false);
   const [activeTrackToken, setActiveTrackToken] = useState<string>('');
-  const [viewMode, setViewMode] = useState<'mobile' | 'responsive'>('mobile');
 
   // Keyboard shortcut: double tap Escape for instant Quick Exit
   useEffect(() => {
@@ -46,7 +45,7 @@ export default function App() {
   };
 
   return (
-    <div className="w-screen h-screen bg-[#EBF3FA] text-[#0E1E32] font-sans flex flex-col antialiased selection:bg-[#D2E4F7] selection:text-[#0E1E32] overflow-hidden safe-area-inset" style={{ paddingTop: 'max(20px, env(safe-area-inset-top))' }}>
+    <div className="h-screen bg-[#EBF3FA] text-[#0E1E32] font-sans flex flex-col items-center justify-start antialiased selection:bg-[#D2E4F7] selection:text-[#0E1E32] overflow-hidden safe-area-inset" style={{ paddingTop: 'max(20px, env(safe-area-inset-top))' }}>
       {/* Decoy Quick Exit Academic Screen */}
       <QuickExitOverlay
         isActive={isQuickExit}
@@ -59,10 +58,10 @@ export default function App() {
         onClose={() => setIsPrivacyModalOpen(false)}
       />
 
-      {/* Main App Container - Full Screen Responsive */}
-      <main className="w-full flex-1 flex flex-col justify-between bg-white overflow-hidden">
+      {/* Main App Container - Fluid Responsive */}
+      <main className="w-full max-w-4xl mx-auto h-full flex flex-col justify-between bg-white transition-all border-x border-[#CBD5E1] shadow-sm overflow-hidden">
         {/* Active Screen View */}
-        <div className={`flex-1 bg-white flex flex-col w-full ${activeTab === 'track' || activeTab === 'home' ? 'overflow-hidden' : 'overflow-y-auto'}`}>
+        <div className={`flex-1 bg-white flex flex-col ${activeTab === 'track' || activeTab === 'home' ? 'overflow-hidden' : 'overflow-y-auto'}`}>
           {activeTab === 'home' && (
             <div className="transition-smooth-fade flex-1">
               <HomeScreen

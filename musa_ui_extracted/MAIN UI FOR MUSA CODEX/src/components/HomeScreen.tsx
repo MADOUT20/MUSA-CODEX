@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ShieldCheck, ArrowRight, Lock, PhoneCall, Copy, Check } from 'lucide-react';
+import React from 'react';
+import { ShieldCheck, ArrowRight, Lock } from 'lucide-react';
 
 interface HomeScreenProps {
   onStartReport: () => void;
@@ -11,14 +11,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onStartReport,
   onOpenPrivacy,
 }) => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopyPhone = () => {
-    navigator.clipboard.writeText('(800) 555-7233');
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   return (
     <div className="flex flex-col justify-between h-full px-5 sm:px-6 py-5 bg-[#FAFBFD] overflow-hidden select-none">
       {/* Discreet, Dignified Top Identity */}
@@ -45,7 +37,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           title="How it works"
           className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-[#D0D9E4] bg-white text-[#0C2340] hover:bg-[#F1F5F9] text-[11px] font-medium transition-colors cursor-pointer shadow-2xs"
         >
-          <ShieldCheck className="w-4 h-4 text-[#1E5C45]" />
+          <ShieldCheck className="w-3.5 h-3.5 text-[#1E5C45]" />
           <span>How it works</span>
         </button>
       </header>
@@ -57,8 +49,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           {/* Poignant Photography */}
           <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#E2E8F0]">
             <img
-              src="logo.png"
-              alt="MUSA Codex Logo"
+              src="/holding_hands.jpg"
+              alt="Hands held tightly in quiet student solidarity and protection"
               referrerPolicy="no-referrer"
               className="w-full h-full object-cover object-center"
             />
@@ -68,7 +60,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             {/* Overlaid Message: Clean, Empathetic, Creative */}
             <div className="absolute inset-x-0 bottom-0 p-4 text-left text-white">
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/20 backdrop-blur-md text-[10px] font-medium text-white mb-1.5 border border-white/30">
-                <Lock className="w-3 h-3" />
+                <Lock className="w-2.5 h-2.5" />
                 <span>Zero records kept</span>
               </span>
               <h2 className="text-base sm:text-lg font-bold text-white leading-tight drop-shadow-sm">
@@ -81,60 +73,21 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           </div>
         </div>
 
-        {/* Campus Crisis Line block moved from Support */}
-        <div className="w-full mt-6 p-4 rounded-xl bg-[#FDF5F5] border border-[#F5D5D8] text-left shadow-sm">
-          <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-lg bg-[#8A2432] text-white flex items-center justify-center shrink-0 mt-0.5">
-              <PhoneCall className="w-5 h-5" />
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A2432]">
-                  24/7 Campus Crisis Line
-                </span>
-              </div>
-              <h2 className="text-xs sm:text-sm font-semibold text-[#0C2340]">
-                Immediate Escort & Anti-Ragging Security
-              </h2>
-              <p className="text-[11px] text-[#556980] mt-0.5 leading-relaxed">
-                Direct dispatch for physical confrontation, hostel room confinement, or urgent campus security intervention.
-              </p>
-              <div className="mt-3 flex items-center gap-2">
-                <a
-                  href="tel:8005557233"
-                  className="px-3 py-1.5 bg-[#8A2432] hover:bg-[#731E2A] text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-                >
-                  <PhoneCall className="w-4 h-4" />
-                  <span>Call (800) 555-SAFE</span>
-                </a>
-                <button
-                  type="button"
-                  onClick={handleCopyPhone}
-                  className="p-1.5 text-xs text-[#526B84] hover:text-[#0C2340] rounded-lg border border-[#D9E2EC] bg-white hover:bg-[#F8FAFC] transition-colors cursor-pointer"
-                  title="Copy number"
-                >
-                  {copied ? <Check className="w-4 h-4 text-[#1E5C45]" /> : <Copy className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Minimal Micro-Reassurance */}
-        <p className="mt-4 text-center text-xs text-[#556980] max-w-xs leading-relaxed">
+        <p className="mt-3.5 text-center text-xs text-[#556980] max-w-xs leading-relaxed">
           No roll numbers, names, or device IP logs. Your case is reviewed neutrally by the ombudsperson.
         </p>
       </div>
 
       {/* The Single Focal Action: Submit Grievance Button */}
-      <div className="w-full max-w-sm mx-auto shrink-0 pt-4">
+      <div className="w-full max-w-sm mx-auto shrink-0 pt-2">
         <button
           type="button"
           onClick={onStartReport}
           className="w-full py-3.5 px-5 bg-[#0C2340] hover:bg-[#16365C] active:bg-[#07172B] text-white rounded-xl font-medium text-sm transition-all duration-150 cursor-pointer text-center flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
         >
           <span>Submit Grievance</span>
-          <ArrowRight className="w-5 h-5 text-white" />
+          <ArrowRight className="w-4 h-4 text-white" />
         </button>
 
         <p className="text-[10px] text-[#64748B] text-center mt-2 font-mono">

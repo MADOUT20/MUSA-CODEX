@@ -79,7 +79,7 @@ export const SupportScreen: React.FC<SupportScreenProps> = ({
               title="Back to support directory"
               className="p-2 rounded-full border border-[#D9E2EC] bg-white hover:bg-[#F1F5F9] text-[#0C2340] transition-colors cursor-pointer flex items-center justify-center group"
             >
-              <ArrowLeft className="w-5 h-5 text-[#0C2340]" />
+              <ArrowLeft className="w-4 h-4 text-[#0C2340]" />
             </button>
           )}
 
@@ -95,7 +95,7 @@ export const SupportScreen: React.FC<SupportScreenProps> = ({
                 : 'bg-white hover:bg-[#F1F5F9] text-[#0C2340] border-[#D9E2EC]'
             }`}
           >
-            <HelpCircle className={`w-5 h-5 ${
+            <HelpCircle className={`w-4 h-4 ${
               currentView === 'faq' ? 'text-white' : 'text-[#0C2340]'
             }`} />
           </button>
@@ -146,7 +146,46 @@ export const SupportScreen: React.FC<SupportScreenProps> = ({
         {/* VIEW 2: Main Support Directory (default) */}
         {currentView === 'directory' && (
           <div className="animate-in fade-in space-y-4">
-            {/* Support Directory list items */}
+            {/* Emergency Distress Banner */}
+            <div className="max-w-md mx-auto w-full p-4 rounded-xl bg-[#FDF5F5] border border-[#F5D5D8] text-left">
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-lg bg-[#8A2432] text-white flex items-center justify-center shrink-0 mt-0.5">
+                  <PhoneCall className="w-4 h-4" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A2432]">
+                      24/7 Campus Crisis Line
+                    </span>
+                  </div>
+                  <h2 className="text-xs sm:text-sm font-semibold text-[#0C2340]">
+                    Immediate Escort & Anti-Ragging Security
+                  </h2>
+                  <p className="text-[11px] text-[#556980] mt-0.5 leading-relaxed">
+                    Direct dispatch for physical confrontation, hostel room confinement, or urgent campus security intervention.
+                  </p>
+                  <div className="mt-3 flex items-center gap-2">
+                    <a
+                      href="tel:8005557233"
+                      className="px-3 py-1.5 bg-[#8A2432] hover:bg-[#731E2A] text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <PhoneCall className="w-3.5 h-3.5" />
+                      <span>Call (800) 555-SAFE</span>
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => handleCopy('main-phone', '(800) 555-7233')}
+                      className="p-1.5 text-xs text-[#526B84] hover:text-[#0C2340] rounded-lg border border-[#D9E2EC] bg-white hover:bg-[#F8FAFC] transition-colors cursor-pointer"
+                      title="Copy number"
+                    >
+                      {copiedId === 'main-phone' ? <Check className="w-3.5 h-3.5 text-[#1E5C45]" /> : <Copy className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Directory of Services with smooth scroll height */}
             <div className="max-w-md mx-auto w-full">
               <div className="flex items-center justify-between mb-2.5">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-[#0C2340]">
@@ -156,7 +195,6 @@ export const SupportScreen: React.FC<SupportScreenProps> = ({
                   {SUPPORT_RESOURCES.length} resources available
                 </span>
               </div>
-
 
               {/* Scrollable list container for resource directory cards */}
               <div className="space-y-3 pb-4">
