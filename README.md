@@ -4,24 +4,28 @@ OMNITRIX (also known as MUSA CODEX) is a specialized multi-platform system for d
 
 ## 🏗️ System Architecture
 
-The system follows a **decoupled, privacy-preserving architecture**:
+The system follows a **secure, end-to-end functional pipeline**:
 
 ```
-Android App (Kotlin/Compose WebView)
+Android App (Kotlin WebView Wrapper)
          ↓
-    React Web UI (Bundled in APK)
+    React Web UI (Vite/TypeScript/Tailwind)
          ↓
-   FastAPI Backend Server
+   FastAPI Backend Server (http://10.0.2.2:8000)
          ↓
-  MuRIL v3 ML Model (PEFT/LoRA)
+  Privacy Transformation (PII Removal)
          ↓
- Emotion Detection & Risk Assessment
+  MuRIL V5-B ML Inference (Emotion/Risk Analysis)
+         ↓
+  Supabase Database (public.complaints)
+         ↓
+  Admin Dashboard (Status Management)
 ```
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Android Emulator or physical device
+- Android Emulator (Pixel recommended)
 - Python 3.8+
 - Node.js v25.6.1+
 - Android SDK 37+
@@ -102,45 +106,39 @@ Emotion → Risk Level (LOW/MEDIUM/HIGH)
 ### Location
 `/backend/main.py`
 
+### Core Pipeline
+1. **Endpoint**: `POST /api/complaint` receives user narrative and metadata.
+2. **Privacy**: `backend/privacy/transformer.py` removes PII before storage.
+3. **ML**: `backend/ml/inference.py` runs MuRIL V5-B to detect emotion/risk.
+4. **Database**: Results are stored in **Supabase** (`public.complaints`).
+5. **Tokens**: A unique tracking token is returned to the user; only the SHA-256 hash of the token is stored in the DB.
+
 ### Endpoints
-
-#### `/` (GET)
-Health check endpoint
-```json
-{
-  "service": "OMNITRIX",
-  "status": "online"
-}
-```
-
 #### `/api/complaint` (POST)
-Main inference endpoint for emotion detection and safety assessment
-
+Main submission endpoint.
 **Request:**
 ```json
 {
-  "text": "Hinglish text to analyze"
+  "text": "Hinglish text to analyze",
+  "category": "...",
+  "location": "...",
+  "timeframe": "...",
+  "desired_action": "...",
+  "urgency": "..."
 }
 ```
-
 **Response:**
 ```json
 {
-  "risk_level": "HIGH|MEDIUM|LOW",
-  "distress_category": "DISTRESS|NEUTRAL|POSITIVE",
-  "emotion": "anger|joy|sadness|etc",
+  "tracking_token": "...",
+  "risk_level": "...",
+  "emotion": "...",
   "confidence": 0.0-1.0
 }
 ```
 
-#### `/docs` (GET)
-Interactive API documentation (Swagger UI)
-
-### Key Features
-- **Real-time inference** using trained LoRA adapters
-- **Sanitized text processing** via `language_agent.py`
-- **Privacy-first design**: No raw text storage, only aggregated metrics
-- **Auto-restart on code changes** (development mode with `--reload`)
+#### `/api/complaint/{token}` (GET)
+Retrieves the current status and risk metrics for a specific report.
 
 ---
 
@@ -150,16 +148,13 @@ Interactive API documentation (Swagger UI)
 `/app/src/main/java/com/omnitrix/app/MainActivity.kt`
 
 ### How It Works
-1. **WebView Wrapper**: Native Android app loads React UI in an embedded WebView
-2. **Local Asset Loading**: UI bundled directly in APK (`file:///android_asset/web-ui/`)
-3. **No network dependency for UI**: Only backend calls go over HTTP
-4. **Privacy**: Device SDK paths auto-generated, not stored in VCS
+1. **WebView Wrapper**: Native Android app loads React UI in an embedded WebView.
+2. **Local Asset Loading**: UI bundled directly in APK (`file:///android_asset/web-ui/`).
+3. **Connectivity**: Backend calls are routed via `http://10.0.2.2:8000`.
 
 ### Configuration
 - **Min SDK**: Android 8.1 (API 27)
 - **Target SDK**: Android 14 (API 37)
-- **Backend URL**: `http://10.0.2.2:8000` (Android Emulator default for localhost)
-- **WebView Settings**: File access enabled for local assets, mixed content allowed
 
 ---
 
@@ -169,26 +164,21 @@ Interactive API documentation (Swagger UI)
 `/src/`
 
 ### Components
-- **HomeScreen**: Landing page with reporting CTA and privacy info
-- **ReportScreen**: Anonymous report submission with categorization
-- **TrackScreen**: Report status tracking with timeline and confidential Ombuds channel
-- **SupportScreen**: Campus support resources and hotlines
-- **PrivacyModal**: Detailed privacy & confidentiality explanation
-- **QuickExitOverlay**: Panic button disguises app as academic library catalog
+- **HomeScreen**: Landing page with reporting CTA and privacy info.
+- **ReportScreen**: Full submission flow with real-time backend integration.
+- **TrackScreen**: Real-time status tracking, automatic refresh every 10s, and a demo-only chat interface.
+- **SupportScreen**: Campus support resources and hotlines.
 
-### Features
-- **Real-time inference feedback** on submitted reports
-- **Anonymous token generation** for report tracking
-- **Confidential messaging** with campus ombudsperson
-- **Smooth animations** (iOS-style transitions between screens)
-- **Mobile-optimized** Tailwind CSS design
+### Key Functionality
+- **Real-time Submission**: Connects to FastAPI to store anonymized complaints in Supabase.
+- **Live Tracking**: Retrieves current report status from the backend using the anonymous token.
+- **Auto-Refresh**: The tracking screen automatically updates if an admin changes the status in the database.
+- **Mock Chat**: The "Confidential Ombuds Channel" is currently a demo-only interface with static conversations.
 
 ### Build
 ```bash
 npm run build --legacy-peer-deps
 ```
-
-Outputs to `/dist/` (then bundled into Android assets)
 
 ---
 
@@ -200,48 +190,26 @@ MUSA CODEX/
 │   ├── src/main/java/com/omnitrix/app/
 │   │   └── MainActivity.kt                 # WebView entry point
 │   ├── src/main/assets/web-ui/            # Bundled React build
-│   │   ├── index.html
-│   │   ├── assets/
-│   │   └── holding_hands.jpg
 │   └── build.gradle.kts                   # Android build config
 │
 ├── src/                                    # React Web UI (TypeScript)
 │   ├── App.tsx                            # Main component
-│   ├── main.tsx                           # Entry point
-│   ├── index.css                          # Custom animations
 │   ├── components/
 │   │   ├── HomeScreen.tsx
 │   │   ├── ReportScreen.tsx
 │   │   ├── TrackScreen.tsx
-│   │   ├── SupportScreen.tsx
-│   │   ├── BottomNav.tsx
-│   │   ├── PrivacyModal.tsx
-│   │   └── QuickExitOverlay.tsx
-│   ├── types/
-│   │   └── index.ts                       # TypeScript interfaces
-│   └── data/
-│       └── initialData.ts                 # Mock data for demo
+│   │   └── SupportScreen.tsx
+│   └── types/
+│       └── index.ts                       # TypeScript interfaces
 │
 ├── backend/                                # Python Backend (FastAPI)
 │   ├── main.py                            # FastAPI app + endpoints
-│   ├── requirements.txt                   # Python dependencies
-│   ├── language_agent.py                  # Text normalization
-│   └── ml/
-│       ├── inference.py                   # MuRIL v3 inference
-│       ├── config.py                      # ML configuration
-│       ├── models/
-│       │   └── muril_emotion_v3/          # Fine-tuned model weights
-│       └── scripts/
-│           └── train_v3.py                # Training script
+│   ├── privacy/                               # PII Removal Logic
+│   │   └── transformer.py
+│   └── ml/                                    # MuRIL v5b inference
+│       ├── inference.py
+│       └── config.py
 │
-├── vite.config.ts                         # Vite build configuration
-├── tsconfig.json                          # TypeScript config
-├── package.json                           # Node dependencies
-├── build.gradle.kts                       # Root Gradle config
-├── settings.gradle.kts                    # Gradle settings
-├── gradlew                                # Gradle wrapper (Linux/Mac)
-├── gradlew.bat                            # Gradle wrapper (Windows)
-├── local.properties                       # Android SDK path (auto-generated)
 ├── README.md                              # This file
 └── RUN.md                                 # Setup & run guide
 ```
@@ -251,19 +219,13 @@ MUSA CODEX/
 ## 🔒 Privacy Architecture
 
 ### No Identity Retention
-- Anonymous tokens generated at submission
-- Raw narrative never stored with identifier
-- IP addresses and device metadata purged immediately
+- Anonymous tokens generated at submission.
+- Raw narrative never stored with identifier.
+- IP addresses and device metadata purged immediately.
 
 ### Data Minimization
-- Only emotion scores sent to frontend
-- De-identified narratives used for context
-- No persistent raw text storage
-
-### Two-Way Ombuds Communication
-- Confidential messaging channel with campus advocate
-- No sender footprints or IP logging
-- Shielded end-to-end communication design
+- Only emotion scores and privacy-safe text are stored in Supabase.
+- Token hashes (SHA-256) are used for tracking to prevent raw token leakage.
 
 ---
 
@@ -274,124 +236,32 @@ MUSA CODEX/
 - **Macro F1-Score**: 57.26%
 - **Weighted F1-Score**: 58.52%
 
-### Validation Performance
-- **Validation Accuracy**: 58.97%
-- **Validation Macro F1**: 56.83%
-
 ### Per-Class Performance (Test Set F1 Scores)
 | Emotion | F1 Score |
 |---------|----------|
-| Disapproval | 0.8262 ⭐ (Strongest) |
-| Love | 0.7645 |
-| Admiration | 0.6587 |
+| Disapproval | 0.8262 ⭐ |
 | Fear | 0.6126 |
 | Anger | 0.6013 |
 | Joy | 0.6485 |
-| Surprise | 0.4831 |
-| Sadness | 0.4323 |
 | Neutral | 0.3529 |
-| Disgust | 0.3458 |
-
-### Model Improvements (v5b vs v4)
-| Metric | v4 | v5b | Improvement |
-|--------|----|----|-------------|
-| Accuracy | 56.83% | 59.83% | **+3.00%** |
-| Macro F1 | 51.44% | 57.26% | **+5.82%** |
-| Weighted F1 | 54.45% | 58.52% | **+4.07%** |
-
-### Key Strengths
-- **Excellent performance on Disapproval detection** (0.8262 F1) - critical for campus safety
-- **Strong on Love & Admiration** - positive emotion recognition
-- **Improved from v4** - significant gains across all metrics
-- **Frozen model** - prevents catastrophic forgetting and ensures stability
-
-### Status
-- ✅ v5b is the current frozen production model
-- 🎯 Training intentionally paused after v5b
-- 📦 Checkpoint: `muril_emotion_v5b/results/checkpoint-3855`
 
 ---
 
 ## 🛠️ Development
 
 ### Making Changes to React UI
-
-**macOS/Linux:**
 ```bash
 # Edit files in src/
-# Rebuild
 npm run build --legacy-peer-deps
-# Copy to Android assets
 cp -r dist/* app/src/main/assets/web-ui/
-# Rebuild APK
 ./gradlew installDebug
-# Launch app
-adb shell am start -n com.omnitrix.app/.MainActivity
-```
-
-**Windows:**
-```batch
-REM Edit files in src/
-REM Rebuild
-npm run build --legacy-peer-deps
-REM Copy to Android assets
-xcopy /E dist\* app\src\main\assets\web-ui\
-REM Rebuild APK
-gradlew.bat installDebug
-REM Launch app
-adb shell am start -n com.omnitrix.app/.MainActivity
-```
-
-### Making Changes to Backend
-```bash
-# Edit files in backend/
-# Backend auto-restarts with --reload flag
-# Test via http://localhost:8000/docs
-```
-
-### Making Changes to Android App
-```bash
-# Edit files in app/src/main/java/
-# Rebuild (macOS/Linux)
-./gradlew installDebug
-# Rebuild (Windows)
-gradlew.bat installDebug
-# Launch
 adb shell am start -n com.omnitrix.app/.MainActivity
 ```
 
 ---
 
 ## 🚨 Troubleshooting
-
-See **RUN.md** for detailed troubleshooting guide specific to your OS.
-
 Common issues:
-- **Backend port 8000 in use**: Check RUN.md for OS-specific commands
-- **NPM build fails**: `npm install --legacy-peer-deps`
-- **App blank screen**: Verify `app/src/main/assets/web-ui/index.html` exists
-- **APK won't install**: Ensure emulator is running or device connected
-
----
-
-## 📋 App Details
-
-| Property | Value |
-|----------|-------|
-| **App Name** | OMNITRIX / Read Between the Lines |
-| **Package** | com.omnitrix.app |
-| **Min SDK** | 27 (Android 8.1) |
-| **Target SDK** | 37 (Android 14) |
-| **UI Framework** | Jetpack Compose (Android), React 19 (Web) |
-| **Backend** | FastAPI (Python) |
-| **ML Model** | MuRIL v3 with LoRA |
-| **Database** | In-memory (development), can integrate backend storage |
-
----
-
-## 👥 Contact & Support
-
-For questions or support regarding this system, contact your campus ombudsperson or safety office.
-
-**Backend API Docs**: `http://localhost:8000/docs` (when running)
-
+- **Backend port 8000 in use**: Check RUN.md for OS-specific commands.
+- **NPM build fails**: `npm install --legacy-peer-deps`.
+- **App blank screen**: Verify `app/src/main/assets/web-ui/index.html` exists.

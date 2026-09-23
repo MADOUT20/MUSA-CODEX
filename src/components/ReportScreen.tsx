@@ -120,14 +120,27 @@ export const ReportScreen: React.FC<ReportScreenProps> = ({
       const response = await fetch(backendUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: narrative }),
+        body: JSON.stringify({
+          text: narrative,
+          category: selectedCategory,
+          location: locationZone,
+          timeframe: approximateTime,
+          desired_action: desiredOutcome,
+          urgency: urgency
+        }),
+      });
+      console.log('SUBMITTING_PAYLOAD:', {
+        category: selectedCategory,
+        location: locationZone,
+        timeframe: approximateTime,
+        desired_action: desiredOutcome,
+        urgency: urgency
       });
 
       if (!response.ok) throw new Error('Backend communication failure');
 
       const analysis = await response.json();
-      const randomHex = Math.floor(1000 + Math.random() * 9000);
-      const generatedToken = `RBL-${randomHex}-SAFE`;
+      const generatedToken = analysis.tracking_token;
       const catObj = CATEGORIES.find(c => c.id === selectedCategory);
 
       const newReport: IncidentReport = {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Search, 
   ShieldCheck, 
@@ -6,7 +6,8 @@ import {
   Send, 
   AlertCircle, 
   MessageSquare, 
-  ArrowLeft
+  ArrowLeft,
+  RefreshCw
 } from 'lucide-react';
 import { IncidentReport } from '../types';
 import { getStoredReports, addMessageToReport } from '../data/initialData';
@@ -26,6 +27,7 @@ export const TrackScreen: React.FC<TrackScreenProps> = ({
   const [errorNotFound, setErrorNotFound] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     const loaded = getStoredReports();
@@ -39,31 +41,133 @@ export const TrackScreen: React.FC<TrackScreenProps> = ({
         setSearchToken(initialToken);
       }
     } else if (loaded.length > 0) {
-      // Default to the first report for instant inspection
       setSelectedReport(loaded[0]);
     }
   }, [initialToken]);
 
-  const handleSearch = (e?: React.FormEvent) => {
+  const handleSearch = useCallback(async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setErrorNotFound(false);
-    const token = searchToken.trim().toLowerCase();
+    const token = searchToken.trim();
     if (!token) return;
 
-    const match = reports.find(r => r.id.toLowerCase() === token);
-    if (match) {
-      setSelectedReport(match);
+    try {
+      const backendUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? `http://localhost:8000/api/complaint/${token}`
+        : `http://10.0.2.2:8000/api/complaint/${token}`;
+
+      const response = await fetch(backendUrl);
+      if (!response.ok) throw new Error('Complaint not found');
+
+      const data = await response.json();
+
+      const report: IncidentReport = {
+        id: token,
+        createdAt: data.updated_at,
+        category: 'General Safety',
+        categoryLabel: 'Safety Report',
+        location: 'Confidential',
+        locationDetails: 'Confidential',
+        approximateDate: data.updated_at,
+        narrative: 'Content protected for privacy.',
+        sanitizedNarrative: 'Content protected for privacy.',
+        urgency: 'Not specified',
+        desiredOutcome: 'Not specified',
+        status: data.status.toLowerCase(),
+        statusLabel: data.status,
+        timeline: [
+          {
+            id: `tl-api-${Date.now()}`,
+            timestamp: data.updated_at,
+            title: `Status: ${data.status}`,
+            description: `Current risk level: ${data.risk_level}. Emotion: ${data.emotion}.`,
+            badge: 'Verified',
+            actor: 'system'
+          }
+        ],
+        messages: []
+      };
+
+      setSelectedReport(report);
       setErrorNotFound(false);
-    } else {
+    } catch (error) {
+      console.error('Tracking Error:', error);
       setErrorNotFound(true);
       setSelectedReport(null);
+    }
+  }, [searchToken]);
+
+  const handleRefresh = useCallback(async () => {
+    if (!selectedReport) return;
+    setIsRefreshing(true);
+    const token = selectedReport.id;
+    try {
+      const backendUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? `http://localhost:8000/api/complaint/${token}`
+        : `http://10.0.2.2:8000/api/complaint/${token}`;
+      const response = await fetch(backendUrl);
+      if (!response.ok) throw new Error('Complaint not found');
+      const data = await response.json();
+      setSelectedReport(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          createdAt: data.updated_at,
+          approximateDate: data.updated_at,
+          status: data.status.toLowerCase(),
+          statusLabel: data.status,
+          timeline: [
+            ...prev.timeline.filter(e => !e.id.startsWith('tl-api-')),
+            {
+              id: `tl-api-${Date.now()}`,
+              timestamp: data.updated_at,
+              title: `Status: ${data.status}`,
+              description: `Current risk level: ${data.risk_level}. Emotion: ${data.emotion}.`,
+              badge: 'Verified',
+              actor: 'system'
+            }
+          ]
+        };
+      });
+      setErrorNotFound(false);
+    } catch (error) {
+      console.error('Refresh Error:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [selectedReport]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (selectedReport) {
+      interval = setInterval(() => {
+        handleRefresh();
+      }, 10000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [selectedReport, handleRefresh]);
+
+  const getStatusBadge = (status: IncidentReport['status']) => {
+    switch (status) {
+      case 'submitted':
+        return <span className="text-[11px] font-medium text-[#1A4568] bg-[#EEF4FA] px-2 py-0.5 rounded border border-[#CBDCEE]">Intake Received</span>;
+      case 'under_review':
+        return <span className="text-[11px] font-medium text-[#1A4568] bg-[#EEF4FA] px-2 py-0.5 rounded border border-[#CBDCEE]">Under Review</span>;
+      case 'advocate_assigned':
+        return <span className="text-[11px] font-medium text-[#0C2340] bg-[#E2ECF7] px-2 py-0.5 rounded border border-[#B8D0E8]">Advocate Assigned</span>;
+      case 'action_taken':
+      case 'resolved':
+        return <span className="text-[11px] font-medium text-[#1E5C45] bg-[#EDF7F2] px-2 py-0.5 rounded border border-[#BFDFD0]">Resolution Active</span>;
+      default:
+        return null;
     }
   };
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedReport || !replyText.trim()) return;
-
     const updated = addMessageToReport(selectedReport.id, replyText.trim());
     if (updated) {
       setSelectedReport(updated);
@@ -72,41 +176,8 @@ export const TrackScreen: React.FC<TrackScreenProps> = ({
     }
   };
 
-  const getStatusBadge = (status: IncidentReport['status']) => {
-    switch (status) {
-      case 'submitted':
-        return (
-          <span className="text-[11px] font-medium text-[#1A4568] bg-[#EEF4FA] px-2 py-0.5 rounded border border-[#CBDCEE]">
-            Intake Received
-          </span>
-        );
-      case 'under_review':
-        return (
-          <span className="text-[11px] font-medium text-[#1A4568] bg-[#EEF4FA] px-2 py-0.5 rounded border border-[#CBDCEE]">
-            Under Review
-          </span>
-        );
-      case 'advocate_assigned':
-        return (
-          <span className="text-[11px] font-medium text-[#0C2340] bg-[#E2ECF7] px-2 py-0.5 rounded border border-[#B8D0E8]">
-            Advocate Assigned
-          </span>
-        );
-      case 'action_taken':
-      case 'resolved':
-        return (
-          <span className="text-[11px] font-medium text-[#1E5C45] bg-[#EDF7F2] px-2 py-0.5 rounded border border-[#BFDFD0]">
-            Resolution Active
-          </span>
-        );
-      default:
-        return null;
-    }
-  };
-
   return (
     <div className="flex flex-col h-full overflow-hidden px-4 sm:px-6 pt-2 pb-3 bg-white">
-      {/* Top Header with Chat Symbol on Top Right - Static */}
       <div className="py-2.5 border-b border-[#E2E8F0] flex items-center justify-between shrink-0">
         <div>
           <h1 className="text-lg sm:text-xl font-semibold tracking-tight text-[#0E1E32]">
@@ -118,41 +189,28 @@ export const TrackScreen: React.FC<TrackScreenProps> = ({
               : 'Enter your anonymous token to check safety measures and advocate actions.'}
           </p>
         </div>
-
-        {/* Top Right Header Action Symbols */}
         <div className="flex items-center gap-1.5 shrink-0 ml-3">
           {isChatOpen && (
             <button
               type="button"
               onClick={() => setIsChatOpen(false)}
-              aria-label="Back to status details"
-              title="Back to status details"
               className="p-2 rounded-full border border-[#E2E8F0] bg-white hover:bg-[#F1F5F9] text-[#0E1E32] transition-colors cursor-pointer shadow-2xs flex items-center justify-center group"
             >
               <ArrowLeft className="w-4 h-4 text-[#0E1E32] group-hover:-translate-x-0.5 transition-transform" />
             </button>
           )}
-
-          {/* Confidential Ombuds Chat Symbol Button */}
           <button
             type="button"
             onClick={() => setIsChatOpen(prev => !prev)}
-            aria-label="Confidential Ombuds Channel"
-            title="Confidential Ombuds Channel"
             className={`p-2 rounded-full border transition-colors cursor-pointer shadow-2xs flex items-center justify-center group ${
-              isChatOpen
-                ? 'bg-[#0E1E32] text-white border-[#0E1E32]'
-                : 'bg-white hover:bg-[#F1F5F9] text-[#0E1E32] border-[#E2E8F0]'
+              isChatOpen ? 'bg-[#0E1E32] text-white border-[#0E1E32]' : 'bg-white hover:bg-[#F1F5F9] text-[#0E1E32] border-[#E2E8F0]'
             }`}
           >
-            <MessageSquare className={`w-4 h-4 transition-transform group-hover:scale-105 ${
-              isChatOpen ? 'text-white' : 'text-[#0E1E32]'
-            }`} />
+            <MessageSquare className={`w-4 h-4 transition-transform group-hover:scale-105 ${isChatOpen ? 'text-white' : 'text-[#0E1E32]'}`} />
           </button>
         </div>
       </div>
 
-      {/* DEDICATED CHAT VIEW IN TRACK SECTION */}
       {isChatOpen ? (
         <div className="mt-3 max-w-md mx-auto w-full flex flex-col flex-1 overflow-hidden animate-in fade-in">
           <div className="bg-white border border-[#E2E8F0] rounded-xl p-4 shadow-[0_2px_12px_rgba(15,35,65,0.04)] flex flex-col flex-1 overflow-hidden">
@@ -175,37 +233,30 @@ export const TrackScreen: React.FC<TrackScreenProps> = ({
                 Shielded
               </span>
             </div>
-
-            {/* Messages Scroll Area */}
             <div className="space-y-2.5 flex-1 overflow-y-auto pr-1 py-1">
-              {(selectedReport?.messages && selectedReport.messages.length > 0) ? (
-                selectedReport.messages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={`p-2.5 rounded-xl text-xs leading-relaxed ${
-                      msg.sender === 'student'
-                        ? 'bg-[#0E1E32] text-white ml-6 shadow-xs'
-                        : 'bg-[#F8FAFC] text-[#0E1E32] border border-[#E2E8F0] mr-6'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1 opacity-75 text-[10px]">
-                      <span className="font-semibold">
-                        {msg.sender === 'student' ? 'You (Anonymous)' : 'Campus Safety Ombudsperson'}
-                      </span>
-                      <span>{msg.timestamp}</span>
-                    </div>
-                    <p>{msg.content}</p>
+              {[
+                { id: 'm1', sender: 'system', timestamp: '10:00 AM', content: 'Hello. How can we assist you with your complaint?' },
+                { id: 'm2', sender: 'student', timestamp: '10:01 AM', content: 'I would like an update on my report.' },
+                { id: 'm3', sender: 'support', timestamp: '10:02 AM', content: 'Your report is currently under review. We will keep you updated.' },
+              ].map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`p-2.5 rounded-xl text-xs leading-relaxed ${
+                    msg.sender === 'student'
+                      ? 'bg-[#0E1E32] text-white ml-6 shadow-xs'
+                      : 'bg-[#F8FAFC] text-[#0E1E32] border border-[#E2E8F0] mr-6'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1 opacity-75 text-[10px]">
+                    <span className="font-semibold">
+                      {msg.sender === 'student' ? 'You (Anonymous)' : 'Campus Safety Ombudsperson'}
+                    </span>
+                    <span>{msg.timestamp}</span>
                   </div>
-                ))
-              ) : (
-                <div className="text-center py-8 text-xs text-[#607994]">
-                  <p>No messages yet on this case.</p>
-                  <p className="mt-1">Send a confidential note below to begin conversation.</p>
+                  <p>{msg.content}</p>
                 </div>
-              )}
+              ))}
             </div>
-
-            {/* Chat Input Form */}
             <form onSubmit={handleSendMessage} className="mt-2 pt-2 border-t border-[#E2EDF7] shrink-0">
               <div className="flex gap-2">
                 <input
@@ -228,7 +279,6 @@ export const TrackScreen: React.FC<TrackScreenProps> = ({
               </p>
             </form>
           </div>
-
           <button
             type="button"
             onClick={() => setIsChatOpen(false)}
@@ -239,9 +289,7 @@ export const TrackScreen: React.FC<TrackScreenProps> = ({
           </button>
         </div>
       ) : (
-        /* STANDARD REPORT TRACKING VIEW: Static Controls & Header, Exclusively Scrollable Timeline */
         <div className="flex flex-col flex-1 overflow-hidden max-w-md mx-auto w-full animate-in fade-in pt-2">
-          {/* Search Input Bar - STATIC */}
           <form onSubmit={handleSearch} className="w-full shrink-0">
             <div className="flex gap-2">
               <div className="relative flex-1">
@@ -261,30 +309,31 @@ export const TrackScreen: React.FC<TrackScreenProps> = ({
                 Track
               </button>
             </div>
-
-            {/* Quick select recent token chips for demonstration - STATIC */}
             <div className="flex items-center gap-1.5 mt-1.5 overflow-x-auto pb-0.5 text-xs text-[#607994]">
               <span className="text-[10px]">Recent:</span>
-              {reports.slice(0, 3).map((rep) => (
-                <button
-                  key={rep.id}
-                  type="button"
-                  onClick={() => {
-                    setSearchToken(rep.id);
-                    setSelectedReport(rep);
-                    setErrorNotFound(false);
-                  }}
-                  className={`px-2 py-0.5 rounded font-mono text-[10px] border transition-colors cursor-pointer ${
-                    selectedReport?.id === rep.id
-                      ? 'border-[#0E1E32] bg-[#0E1E32] text-white'
-                      : 'border-[#E2E8F0] bg-white hover:bg-[#F8FAFC] text-[#0E1E32]'
-                  }`}
-                >
-                  {rep.id}
-                </button>
-              ))}
+              {reports.length > 0 ? (
+                reports.slice(0, 3).map((rep) => (
+                  <button
+                    key={rep.id}
+                    type="button"
+                    onClick={() => {
+                      setSearchToken(rep.id);
+                      setSelectedReport(rep);
+                      setErrorNotFound(false);
+                    }}
+                    className={`px-2 py-0.5 rounded font-mono text-[10px] border transition-colors cursor-pointer ${
+                      selectedReport?.id === rep.id
+                        ? 'border-[#0E1E32] bg-[#0E1E32] text-white'
+                        : 'border-[#E2E8F0] bg-white hover:bg-[#F8FAFC] text-[#0E1E32]'
+                    }`}
+                  >
+                    {rep.id}
+                  </button>
+                ))
+              ) : (
+                <span className="italic opacity-70">No reports submitted yet.</span>
+              )}
             </div>
-
             {errorNotFound && (
               <div className="mt-2 p-2 bg-[#FFF3ED] border border-[#E07A5F]/30 rounded-xl flex items-start gap-2 text-xs text-[#C44525]">
                 <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
@@ -297,11 +346,8 @@ export const TrackScreen: React.FC<TrackScreenProps> = ({
               </div>
             )}
           </form>
-
-          {/* Report View: Static Summary Card on top, Scrollable Timeline Below */}
           {selectedReport && (
             <div className="mt-3 flex flex-col flex-1 overflow-hidden space-y-2.5">
-              {/* Main Status Header Card - STATIC */}
               <div className="bg-white border border-[#E2E8F0] rounded-xl p-3 sm:p-3.5 shadow-xs shrink-0">
                 <div className="flex items-start justify-between">
                   <div>
@@ -314,7 +360,6 @@ export const TrackScreen: React.FC<TrackScreenProps> = ({
                   </div>
                   {getStatusBadge(selectedReport.status)}
                 </div>
-
                 <div className="mt-2 pt-2 border-t border-[#E2EDF7] grid grid-cols-2 gap-2 text-[11px] text-[#4E657E]">
                   <div>
                     <span className="text-[9px] uppercase text-[#607994] block">Zone</span>
@@ -325,8 +370,6 @@ export const TrackScreen: React.FC<TrackScreenProps> = ({
                     <span className="font-medium text-[#0E1E32]">{selectedReport.createdAt}</span>
                   </div>
                 </div>
-
-                {/* Sanitized Narrative Excerpt */}
                 <div className="mt-2 p-2 bg-[#F8FAFC] rounded-lg border border-[#E2E8F0]">
                   <span className="text-[9px] uppercase font-semibold text-[#1E4D82] block">
                     De-Identified Narrative on File
@@ -336,18 +379,25 @@ export const TrackScreen: React.FC<TrackScreenProps> = ({
                   </p>
                 </div>
               </div>
-
-              {/* ONLY TIMELINE SCROLLABLE CONTAINER */}
               <div className="bg-white border border-[#E2E8F0] rounded-xl p-3 shadow-xs flex flex-col flex-1 overflow-hidden">
                 <div className="flex items-center justify-between pb-2 border-b border-[#E8EDF4] mb-2 shrink-0">
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-[#0E1E32] flex items-center gap-1.5">
                     <Clock className="w-3.5 h-3.5 text-[#1E4D82]" />
                     <span>Campus Action Timeline</span>
                   </h3>
-                  <span className="text-[10px] text-[#607994]">Scrollable</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleRefresh}
+                      disabled={isRefreshing}
+                      className="p-1.5 rounded-lg bg-white border border-[#E2E8F0] text-[#0E1E32] hover:bg-[#F8FAFC] transition-colors cursor-pointer disabled:opacity-50 shadow-xs"
+                      title="Refresh Status"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}" />
+                    </button>
+                    <span className="text-[10px] text-[#607994]">Scrollable</span>
+                  </div>
                 </div>
-
-                {/* Inner Scrollable Timeline Box */}
                 <div className="space-y-3 relative before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-[#E2E8F0] overflow-y-auto flex-1 pr-1.5 py-1">
                   {selectedReport.timeline.map((event) => (
                     <div key={event.id} className="relative pl-6">
@@ -372,8 +422,6 @@ export const TrackScreen: React.FC<TrackScreenProps> = ({
               </div>
             </div>
           )}
-
-          {/* Empty State / Prompt to submit if no report selected */}
           {!selectedReport && !errorNotFound && (
             <div className="mt-8 text-center max-w-sm mx-auto p-6 bg-white border border-[#E2E8F0] rounded-2xl shadow-xs">
               <div className="w-12 h-12 rounded-full bg-[#F1F5F9] border border-[#E2E8F0] flex items-center justify-center mx-auto text-[#0E1E32] mb-3">

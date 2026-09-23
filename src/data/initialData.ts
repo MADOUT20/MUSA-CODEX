@@ -1,118 +1,6 @@
 import { IncidentReport, SupportContact, AnonymousMessage } from '../types';
 
-export const INITIAL_REPORTS: IncidentReport[] = [
-  {
-    id: 'RBL-4821-SAFE',
-    createdAt: 'Yesterday at 8:14 PM',
-    category: 'intimidation',
-    categoryLabel: 'Covert Harassment & Intimidation',
-    location: 'North Quad Dormitory, Block C',
-    approximateDate: 'September 16, evening hours',
-    narrative: 'Senior batch members were barring freshers from entering the communal kitchen after 9 PM and insisting on forced roll-calls in corridor B.',
-    sanitizedNarrative: 'Upperclass residents restricted access to communal residential facilities during late hours and conducted unauthorized mandatory roll-calls.',
-    urgency: 'high',
-    desiredOutcome: 'Increased unannounced safety walk-throughs by resident advisors without revealing student identity.',
-    status: 'advocate_assigned',
-    statusLabel: 'Advocate Assigned & Under Review',
-    timeline: [
-      {
-        id: 'tl-1',
-        timestamp: 'Sep 17, 8:14 PM',
-        title: 'Report Received & Tokenized',
-        description: 'Anonymous token generated. IP headers and client metadata permanently purged.',
-        badge: 'Secure System',
-        actor: 'system'
-      },
-      {
-        id: 'tl-2',
-        timestamp: 'Sep 17, 9:30 PM',
-        title: 'Sanitized Intake Review',
-        description: 'Case categorized under Campus Anti-Intimidation Policy Section 4.2. Risk assessed as Moderate-High.',
-        actor: 'ombudsperson'
-      },
-      {
-        id: 'tl-3',
-        timestamp: 'Today, 9:15 AM',
-        title: 'Confidential Advocate Assigned',
-        description: 'Senior Ombudsperson Dr. A. Vance assigned to review security footage logs and increase residential perimeter checks.',
-        badge: 'In Progress',
-        actor: 'ombudsperson'
-      }
-    ],
-    messages: [
-      {
-        id: 'msg-1',
-        sender: 'ombudsperson',
-        timestamp: 'Sep 17, 10:05 PM',
-        content: 'Thank you for stepping forward. Your identity is 100% shielded. We have scheduled discrete evening rounds by neutral residence staff. Have there been any direct verbal threats to your room?'
-      },
-      {
-        id: 'msg-2',
-        sender: 'student',
-        timestamp: 'Sep 18, 12:40 AM',
-        content: 'No direct threats to individual rooms yet, but they announced another mandatory gathering for tonight near the fire stairwell.'
-      },
-      {
-        id: 'msg-3',
-        sender: 'ombudsperson',
-        timestamp: 'Today, 8:30 AM',
-        content: 'Noted with urgency. We are dispatching staff advisors to remain stationed near the stairwell during the specified window. Please stay inside and reach out here if anything escalates.'
-      }
-    ]
-  },
-  {
-    id: 'RBL-9014-CARE',
-    createdAt: '3 days ago',
-    category: 'academic_coercion',
-    categoryLabel: 'Academic Coercion',
-    location: 'Engineering Science Lab 3',
-    approximateDate: 'September 14, afternoon',
-    narrative: 'Lab assignments were being withheld unless junior students completed extra personal errands for department lab reps.',
-    sanitizedNarrative: 'Academic lab apparatus and assignment sign-offs were conditioned upon non-curricular demands.',
-    urgency: 'medium',
-    desiredOutcome: 'Neutral faculty oversight during lab submission hours.',
-    status: 'action_taken',
-    statusLabel: 'Corrective Action Taken',
-    timeline: [
-      {
-        id: 'tl-a1',
-        timestamp: 'Sep 14, 4:20 PM',
-        title: 'Report Registered',
-        description: 'Cryptographic token assigned. Narrative scrubbed of specific student group nicknames.',
-        actor: 'system'
-      },
-      {
-        id: 'tl-a2',
-        timestamp: 'Sep 15, 11:00 AM',
-        title: 'Faculty Chair Consultation',
-        description: 'Department ombuds met with Head of Laboratory to institute direct digital submissions via university portal.',
-        actor: 'ombudsperson'
-      },
-      {
-        id: 'tl-a3',
-        timestamp: 'Sep 16, 2:00 PM',
-        title: 'Protocol Implemented',
-        description: 'All lab sign-offs now bypass peer representatives directly to teaching assistants.',
-        badge: 'Resolved',
-        actor: 'safety_board'
-      }
-    ],
-    messages: [
-      {
-        id: 'msg-b1',
-        sender: 'ombudsperson',
-        timestamp: 'Sep 15, 11:30 AM',
-        content: 'We met with the lab director without disclosing who submitted this report. A revised digital sign-off protocol has been instituted effective today.'
-      },
-      {
-        id: 'msg-b2',
-        sender: 'student',
-        timestamp: 'Sep 16, 3:15 PM',
-        content: 'Confirmed, the new portal submission worked smoothly today. Thank you so much for the quick help.'
-      }
-    ]
-  }
-];
+export const INITIAL_REPORTS: IncidentReport[] = [];
 
 export const SUPPORT_RESOURCES: SupportContact[] = [
   {
@@ -173,12 +61,16 @@ export function getStoredReports(): IncidentReport[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_REPORTS);
     if (!raw) {
-      localStorage.setItem(STORAGE_KEY_REPORTS, JSON.stringify(INITIAL_REPORTS));
-      return INITIAL_REPORTS;
+      return [];
     }
-    return JSON.parse(raw);
+    const reports = JSON.parse(raw);
+    if (!Array.isArray(reports)) return [];
+
+    // MIGRATION: Remove any mock/demo reports that match the fake token format (RBL-xxxx-SAFE)
+    // This cleanses persisted LocalStorage without wiping legitimate real reports.
+    return reports.filter(r => !r.id.toUpperCase().endsWith('-SAFE'));
   } catch {
-    return INITIAL_REPORTS;
+    return [];
   }
 }
 
