@@ -1,3 +1,102 @@
+# OMNITRIX / MUSA CODEX
+
+## Start Here
+
+OMNITRIX is a privacy-focused student safety system. It accepts anonymous complaints, removes direct identifiers and selected writing-style signals before analysis, detects emotion in Hinglish and other code-mixed text, and gives authorized operators high-level risk indicators instead of exposing the original complaint.
+
+> **Current status:** The backend, privacy pipeline, MuRIL V5-B inference, Supabase persistence, admin API, and React/Vite admin dashboard are integrated. Privacy hardening, model upgrades, authorization, and final validation are still in progress.
+
+### What happens to a complaint?
+
+```text
+Anonymous complaint
+  -> Privacy transformation
+  -> Hinglish/code-mixed normalization
+  -> MuRIL V5-B emotion classification
+  -> Risk and distress mapping
+  -> Privacy-safe Supabase record
+  -> Admin dashboard
+```
+
+The intended order is important: text is privacy-transformed **before** normalization or external language processing. The original complaint is not intentionally persisted; the database is designed around a `privacy_safe_text` representation.
+
+### Jump to what you need
+
+| I want to... | Go to |
+| --- | --- |
+| Run the Android app | [Quick Start](#-quick-start) |
+| Run the backend and admin dashboard | [Local Admin Setup](#local-admin-setup) |
+| Understand the privacy layer | [Privacy Architecture](#-privacy-architecture) |
+| Call the complaint API | [Backend API](#-backend-fastapi) |
+| See the current scope and limitations | [Project Status](#project-status) |
+| Fix a local setup issue | [Troubleshooting](#-troubleshooting) or [RUN.md](RUN.md) |
+
+### Current feature checklist
+
+- [x] Anonymous complaint submission and tracking tokens
+- [x] PII masking and privacy-safe persistence
+- [x] MuRIL V5-B emotion inference
+- [x] Supabase integration
+- [x] Admin complaint listing, details, status updates, and history
+- [x] React/Vite admin dashboard
+- [ ] Stronger adversarial privacy evaluation
+- [ ] Production-grade admin authentication and authorization
+- [ ] V5-C/V6 model integration and full regression testing
+
+## Local Admin Setup
+
+For the backend and admin dashboard, use two terminals from the repository root:
+
+**Terminal 1: backend**
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r backend/requirements.txt
+uvicorn backend.main:app --reload
+```
+
+**Terminal 2: admin dashboard**
+
+```bash
+cd admin-frontend
+npm install
+npm run dev
+```
+
+The backend starts at `http://127.0.0.1:8000`. Configure local secrets in `.env` and never commit API keys, Supabase secret keys, passwords, or authentication tokens.
+
+Run the privacy tests with:
+
+```bash
+python -m pytest -q
+```
+
+For the Android emulator workflow, continue to [Quick Start](#-quick-start) below and see [RUN.md](RUN.md) for platform-specific troubleshooting.
+
+## Privacy Architecture
+
+The privacy layer lives in `backend/privacy/transformer.py` and currently handles:
+
+- Email addresses, phone numbers, URLs, student IDs, roll numbers, and enrollment numbers
+- Social handles, long numeric identifiers, titled person references, and selected academic context
+- Unicode, whitespace, capitalization, punctuation, and word-elongation normalization
+
+Example:
+
+```text
+Raw: My roll number is 23AIML12345 and my email is student@example.com.
+Safe: my roll number is [STUDENT_ID] and my email is [EMAIL].
+```
+
+The privacy layer reduces exposure; it is not a mathematical guarantee that re-identification is impossible. Indian names, context-dependent identifiers, false positives, and cross-complaint stylometric linkage remain active evaluation areas.
+
+## Project Status
+
+OMNITRIX is a student/hackathon project and should not be used as a standalone safety, disciplinary, or incident-ground-truth system. The ML model predicts emotion classes, and application rules map those predictions to broad risk indicators.
+
+Before real institutional deployment, the project still needs stronger privacy evaluation, production authorization, database-policy hardening, model benchmarking, UI refinement, and complete end-to-end regression testing.
+
 # OMNITRIX: Privacy-Preserving Student Safety Intelligence
 
 OMNITRIX (also known as MUSA CODEX) is a specialized multi-platform system for detecting distress and emotion in code-mixed (Hinglish) text, specifically tailored for student safety assessments. It employs a privacy-first architecture where analysis is performed on a secure backend, returning only high-level safety indicators to the end-user.
