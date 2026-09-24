@@ -16,6 +16,7 @@ The complaint is privacy-transformed before normalization or external language p
 | --- | --- |
 | Build and launch the Android app | [Quick Start](docs/quick-start.md) |
 | Run the backend and admin dashboard | [Admin Setup](docs/admin-setup.md) |
+| Understand the problem and full system flow | [Problem & Architecture](docs/problem-and-architecture.md) |
 | Understand privacy handling | [Privacy Architecture](docs/privacy.md) |
 | Call the complaint and tracking APIs | [Backend API](docs/api.md) |
 | See completed work and limitations | [Project Status](docs/project-status.md) |
